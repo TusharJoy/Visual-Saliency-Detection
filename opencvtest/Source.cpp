@@ -14,7 +14,9 @@ using namespace std;
 using namespace cv;
 
 int width, height;
-
+int image_num = 0;
+vector<String> fn;
+vector<String>Output;
 
 float Euclidistance(float x1, float y1, float x2, float y2)
 {
@@ -44,7 +46,9 @@ void draw_Map(vector<float>sal , Mat img , Superpixels sp,string s)
 		}
 	}
 
-	imshow(s, output);
+	string ss = "Output/"+ fn[image_num];
+	ss += s+".jpg";
+	imwrite(ss,output);
 }
 
 
@@ -277,273 +281,285 @@ vector<float> Color_importance_map(Mat img,Superpixels sp)
 
 int main()
 {
-	Mat img = imread("24071.jpg") ;
-	if (!img.data) {
-		cout << "Bad image ..." << endl;
-		return 0;
-	}
 
-
-	width = img.cols;
-	height = img.rows;
-
-	//imshow("Original image", img);
-	Superpixels sp(img);
-
-	Mat labels = sp.getLabels();
-	Mat boundaries = sp.viewSuperpixels();
-	Mat recolored = sp.colorSuperpixels();
-
-	//imshow("Average superpixel colors", recolored);
-
-	// centers of the K clusters
-	vector<Point> centers = sp.getCenters();
-	vector<Vec3b> avg_colors(centers.size() ) ;
-
-	Mat trial;
-
-	cvtColor(recolored, trial, COLOR_BGR2Lab);
-
-	for (int i = 0; i < centers.size(); i++)
-	{
-		avg_colors[i] = trial.at<Vec3b>(centers[i]);
-	}
+	String imagesPath = "MSRAdataset1K/*.jpg"; // it has filters, too !
 	
-	// Global Contrast Map
-
-
-
-	vector<float>global_sal;
-
-	for (int i = 0; i < centers.size(); i++)
+	glob(imagesPath, fn, true); // recursive, if you want
+	for (size_t i = 0; i<fn.size(); i++)
 	{
-		float sal1 = 0.0;
-		for (int j = 0; j < centers.size(); j++)
+		Mat img = imread(fn[i]);
+
+	
+		//Mat img = imread("75.jpg");
+		if (!img.data) {
+			cout << "Bad image ..." << endl;
+			return 0;
+		}
+
+		cout << fn.size();
+
+
+		width = img.cols;
+		height = img.rows;
+
+		//imshow("Original image", img);
+		Superpixels sp(img);
+
+		Mat labels = sp.getLabels();
+		Mat boundaries = sp.viewSuperpixels();
+		Mat recolored = sp.colorSuperpixels();
+
+		//imshow("Average superpixel colors", recolored);
+
+		// centers of the K clusters
+		vector<Point> centers = sp.getCenters();
+		vector<Vec3b> avg_colors(centers.size());
+
+		Mat trial;
+
+		cvtColor(recolored, trial, COLOR_BGR2Lab);
+
+		for (int i = 0; i < centers.size(); i++)
 		{
-			if (i != j)
+			avg_colors[i] = trial.at<Vec3b>(centers[i]);
+		}
+
+		// Global Contrast Map
+
+
+		vector<float>global_sal;
+
+		for (int i = 0; i < centers.size(); i++)
+		{
+			float sal1 = 0.0;
+			for (int j = 0; j < centers.size(); j++)
 			{
-				float x1, x2, y1, y2;
-				x1 = centers[i].x / (width*1.0);
-				x2 = centers[j].x / (width*1.0);
-				y1 = centers[i].y / (height*1.0);
-				y2 = centers[j].y / (height*1.0);
+				if (i != j)
+				{
+					float x1, x2, y1, y2;
+					x1 = centers[i].x / (width*1.0);
+					x2 = centers[j].x / (width*1.0);
+					y1 = centers[i].y / (height*1.0);
+					y2 = centers[j].y / (height*1.0);
 
-				float ds = Euclidistance(x1, y1, x2, y2);
-				
-				Vec3f intensity1,intensity2;
+					float ds = Euclidistance(x1, y1, x2, y2);
 
-				intensity1[0] = avg_colors[i][0] / 255.0; intensity1[1] = avg_colors[i][1] / 255.0; intensity1[2] = avg_colors[i][2] / 255.0; 
-				intensity2[0] = avg_colors[j][0] / 255.0; intensity2[1] = avg_colors[j][1] / 255.0; intensity2[2] = avg_colors[j][2] / 255.0;
-				float color_dis = sqrtf( ((intensity2[2] - intensity1[2])*(intensity2[2] - intensity1[2])) + ((intensity2[1] - intensity1[1])*(intensity2[1] - intensity1[1])) + ((intensity2[0] - intensity1[0])*(intensity2[0] - intensity1[0])) );
+					Vec3f intensity1, intensity2;
 
-				//cout << "color Distance = " << color_dis << endl;
+					intensity1[0] = avg_colors[i][0] / 255.0; intensity1[1] = avg_colors[i][1] / 255.0; intensity1[2] = avg_colors[i][2] / 255.0;
+					intensity2[0] = avg_colors[j][0] / 255.0; intensity2[1] = avg_colors[j][1] / 255.0; intensity2[2] = avg_colors[j][2] / 255.0;
+					float color_dis = sqrtf(((intensity2[2] - intensity1[2])*(intensity2[2] - intensity1[2])) + ((intensity2[1] - intensity1[1])*(intensity2[1] - intensity1[1])) + ((intensity2[0] - intensity1[0])*(intensity2[0] - intensity1[0])));
 
-				float similarity = expf((-color_dis /0.25));
+					//cout << "color Distance = " << color_dis << endl;
 
-				float dissimilarity = 1 - similarity;
+					float similarity = expf((-color_dis / 0.25));
 
-				float lamda = 1 - expf(-1.0/0.25);
-				float  dis_ds = (dissimilarity) / (ds*ds + lamda); 
+					float dissimilarity = 1 - similarity;
 
-				sal1 += dis_ds;
+					float lamda = 1 - expf(-1.0 / 0.25);
+					float  dis_ds = (dissimilarity) / (ds*ds + lamda);
 
+					sal1 += dis_ds;
+
+				}
+			}
+
+			sal1 = sal1 / centers.size();
+			global_sal.push_back(sal1);
+
+		}
+		normalized(&global_sal);
+		draw_Map(global_sal, img, sp, "global saliency Map");
+
+		//Boundary Aware Contrast Map
+		//Calculating boundary region and storing their center and color in a vector 
+
+		vector<float>boundary_sal;
+
+		vector<Point> boundary_centers;
+		set<int>point_lbl;
+
+
+		for (int i = 0; i < img.cols; i++) {
+			int lbl = labels.at<int>(0, i);
+			point_lbl.insert(lbl);
+
+			int lbl1 = labels.at<int>(img.rows - 2, i);
+			point_lbl.insert(lbl1);
+		}
+
+		for (int i = 0; i < img.rows; i++) {
+			int lbl = labels.at<int>(i, 0);
+			point_lbl.insert(lbl);
+
+			int lbl1 = labels.at<int>(i, img.cols - 2);
+			point_lbl.insert(lbl1);
+		}
+
+		int M_superPixels = point_lbl.size();
+		set<int>::iterator it;
+
+		for (it = point_lbl.begin(); it != point_lbl.end(); it++) {
+			Point data = centers[*it];
+			boundary_centers.push_back(data);
+		}
+
+		vector<Vec3b> boundary_avg_colors(boundary_centers.size());
+
+		for (int i = 0; i < boundary_centers.size(); i++)
+		{
+			int lbl = labels.at<int>(boundary_centers[i]);
+			boundary_avg_colors[i] = avg_colors[lbl];
+
+		}
+
+
+		for (int i = 0; i < centers.size(); i++)
+		{
+			float sal2 = 0.0;
+			vector<float>Dissimilarity_vector;
+			for (int j = 0; j < boundary_centers.size(); j++)
+			{
+
+				if (centers[i].x != boundary_centers[j].x && centers[i].y != boundary_centers[j].y) {
+
+					float x1, x2, y1, y2;
+					x1 = centers[i].x / width;
+					x2 = boundary_centers[j].x / width;
+					y1 = centers[i].y / height;
+					y2 = boundary_centers[j].y / height;
+					float ds = Euclidistance(x1, y1, x2, y2);
+					Vec3f intensity1, intensity2;
+
+					intensity1[0] = avg_colors[i][0] / 255.0; intensity1[1] = avg_colors[i][1] / 255.0; intensity1[2] = avg_colors[i][2] / 255.0;
+					intensity2[0] = boundary_avg_colors[j][0] / 255.0; intensity2[1] = boundary_avg_colors[j][1] / 255.0; intensity2[2] = boundary_avg_colors[j][2] / 255.0;
+
+					float color_dis = sqrtf(((intensity2[2] - intensity1[2])*(intensity2[2] - intensity1[2])) + ((intensity2[1] - intensity1[1])*(intensity2[1] - intensity1[1])) + ((intensity2[0] - intensity1[0])*(intensity2[0] - intensity1[0])));
+					float similarity = expf((-color_dis / 0.25));
+					float dissimilarity = 1 - similarity;
+					float lamda = 1 - expf(-1.0 / 0.25);
+					float  dis_ds = (dissimilarity) / (ds*ds + lamda);
+					Dissimilarity_vector.push_back(dis_ds);
+				}
+			}
+
+			sort(Dissimilarity_vector.begin(), Dissimilarity_vector.end());
+
+			for (int k = 0; k < (int)Dissimilarity_vector.size()*.3; k++)
+			{
+				//cout<<Dissimilarity_vector[k]<<endl  ;
+				sal2 += Dissimilarity_vector[k];
+			}
+			sal2 /= (int)Dissimilarity_vector.size()*.3;
+			boundary_sal.push_back(sal2);
+		}
+
+		normalized(&boundary_sal);
+		draw_Map(boundary_sal, img, sp, "Boundary saliency Map");
+
+
+		// Color image and lab image 
+		/*
+		Various Experiment on color mOdel
+		We will Experiment on Specially CIE LAB color Model Which give importance to Light and Color Complement
+		Lets see what we can achieve .All the good wishes for Us
+		*/
+		//Color_saliency;
+		vector<float>color_Saliency(Color_importance_map(img, sp));
+
+		// combining ColorImportance image and Salient Map Image
+		// Taking   average saliency  method From ColorImportance Image
+
+
+		//Now Combining both the Global Saliency Map and the Boundary Saliency Map 
+		// Saliency Map  S  = S_boundary * (1 + S_global)
+
+		vector <float> sal_Map;
+
+		for (int i = 0; i < boundary_sal.size(); i++)
+		{
+			float sal = boundary_sal[i] * (1 + global_sal[i]) + color_Saliency[i] * .5;
+			sal_Map.push_back(sal);
+		}
+		normalized(&sal_Map);
+
+		draw_Map(sal_Map, img, sp, "Final saliency Map Without Smoothing ");
+		// Now smoothing TEchnique
+
+		float std_deviation, sqrd_distance = 0.0;
+		float sum = 0.0, mean;
+		for (int i = 0; i < sal_Map.size(); i++)
+		{
+			sum += sal_Map[i];
+		}
+		mean = sum / sal_Map.size();
+
+		for (int i = 0; i < sal_Map.size(); i++)
+		{
+			sqrd_distance += powf((abs(sal_Map[i] - mean)), 2.0);
+		}
+		std_deviation = sqrtf(sqrd_distance / sal_Map.size());
+
+
+
+		vector <Point> attention_region;
+		for (int i = 0; i < sal_Map.size(); i++)
+		{
+			if (sal_Map[i] >= 0.8)
+			{
+				Point X = centers[i];
+				attention_region.push_back(X);
 			}
 		}
 
-		sal1 = sal1/centers.size(); 
-		global_sal.push_back(sal1);
 
-	}
-	normalized(&global_sal);
-	draw_Map(global_sal, img, sp,"global saliency Map");
-
-	//Boundary Aware Contrast Map
-	//Calculating boundary region and storing their center and color in a vector 
-
-	vector<float>boundary_sal;
-
-	vector<Point> boundary_centers;
-	set<int>point_lbl;
-	
-
-	for (int i = 0; i < img.cols; i++) {
-		int lbl = labels.at<int>(0, i);
-		point_lbl.insert(lbl);
-
-		int lbl1 = labels.at<int>(img.rows-2, i);
-		point_lbl.insert(lbl1);
-	}
-
-	for (int i = 0; i < img.rows; i++) {
-		int lbl = labels.at<int>(i, 0);
-		point_lbl.insert(lbl);
-
-		int lbl1 = labels.at<int>(i,img.cols-2);
-		point_lbl.insert(lbl1);
-	}
-
-	int M_superPixels = point_lbl.size();
-	set<int>::iterator it;
-
-	for (it = point_lbl.begin(); it != point_lbl.end(); it++) {
-		Point data = centers[*it];
-		boundary_centers.push_back(data);
-	}
-
-	vector<Vec3b> boundary_avg_colors(boundary_centers.size());
-
-	for (int i = 0; i < boundary_centers.size(); i++)
-	{
-		int lbl = labels.at<int>(boundary_centers[i]);
-		boundary_avg_colors[i] = avg_colors[lbl];
-
-	}
-
-
-	for (int i = 0; i < centers.size(); i++)
-	{
-		float sal2 = 0.0;
-		vector<float>Dissimilarity_vector ;
-		for (int j = 0; j < boundary_centers.size(); j++)
+		for (int i = 0; i < sal_Map.size(); i++)
 		{
+			float sal = sal_Map[i];
+			float d_focus = d_foci(centers[i], attention_region);
 
-			if (centers[i].x != boundary_centers[j].x && centers[i].y != boundary_centers[j].y) {
+			if ((d_focus <= 0.4) && (sal > mean + std_deviation))
+			{
 
-				float x1, x2, y1, y2;
-				x1 = centers[i].x / width;
-				x2 = boundary_centers[j].x / width;
-				y1 = centers[i].y / height;
-				y2 = boundary_centers[j].y / height;
-				float ds = Euclidistance(x1, y1, x2, y2);
-				Vec3f intensity1, intensity2;
+				float val = sal * (1.0 / (1 - d_focus));
+				sal_Map[i] = MIN(1.0, val);
+			}
 
-				intensity1[0] = avg_colors[i][0] / 255.0; intensity1[1] = avg_colors[i][1] / 255.0; intensity1[2] = avg_colors[i][2] / 255.0;
-				intensity2[0] = boundary_avg_colors[j][0] / 255.0; intensity2[1] = boundary_avg_colors[j][1] / 255.0; intensity2[2] = boundary_avg_colors[j][2] / 255.0;
-				
-				float color_dis = sqrtf(((intensity2[2] - intensity1[2])*(intensity2[2] - intensity1[2])) + ((intensity2[1] - intensity1[1])*(intensity2[1] - intensity1[1])) + ((intensity2[0] - intensity1[0])*(intensity2[0] - intensity1[0])));
-				float similarity = expf((-color_dis / 0.25));
-				float dissimilarity = 1 - similarity;
-				float lamda = 1 - expf(-1.0 /0.25);
-				float  dis_ds = (dissimilarity) / (ds*ds + lamda);
-				Dissimilarity_vector.push_back(dis_ds);
+			if (d_focus <= 0.5)
+			{
+
+				sal_Map[i] = sal* (1 - d_focus);
+			}
+			else {
+
+				sal_Map[i] = sal*(1 - d_focus)*(1 - d_focus);
 			}
 		}
 
-		sort(Dissimilarity_vector.begin(), Dissimilarity_vector.end());
-		
-		for (int k = 0; k < (int) Dissimilarity_vector.size()*.3 ; k++)
+		normalized(&sal_Map);
+		//draw_Map(sal_Map, img, sp, "Final saliency Map");
+
+
+		for (int i = 0; i < sal_Map.size(); i++)
 		{
-			//cout<<Dissimilarity_vector[k]<<endl  ;
-			sal2 += Dissimilarity_vector[k];
-		}
-		sal2 /= (int)Dissimilarity_vector.size()*.3;
-		boundary_sal.push_back(sal2);
-	}
-
-	normalized(&boundary_sal);
-	draw_Map(boundary_sal, img, sp,"Boundary saliency Map");
-
-
-	// Color image and lab image 
-	/*
-	Various Experiment on color mOdel
-	We will Experiment on Specially CIE LAB color Model Which give importance to Light and Color Complement
-	Lets see what we can achieve .All the good wishes for Us
-	*/
-	//Color_saliency;
-	vector<float>color_Saliency(Color_importance_map(img, sp));
-
-	// combining ColorImportance image and Salient Map Image
-	// Taking   average saliency  method From ColorImportance Image
-
-
-	//Now Combining both the Global Saliency Map and the Boundary Saliency Map 
-	// Saliency Map  S  = S_boundary * (1 + S_global)
-
-	vector <float> sal_Map;
-
-	for (int i = 0; i < boundary_sal.size(); i++) 
-	{
-		float sal = boundary_sal[i] * (1 +global_sal[i]*color_Saliency[i]);
-		sal_Map.push_back(sal);
-	}
-	normalized(&sal_Map);
-
-	// Now smoothing TEchnique 
-
-	float std_deviation,sqrd_distance=0.0;
-	float sum = 0.0, mean;
-	for (int i = 0; i<sal_Map.size(); i++)
-	{
-		sum += sal_Map[i];
-	}
-	mean = sum / sal_Map.size();
-
-	for (int i=0;i<sal_Map.size();i++)
-	{
-		sqrd_distance += powf((abs(sal_Map[i] - mean)) , 2.0 );
-	}
-	std_deviation = sqrtf(sqrd_distance / sal_Map.size());
-
-
-
-	vector <Point> attention_region;
-	for (int i = 0; i < sal_Map.size(); i++)
-	{
-		if ( sal_Map[i] >= 0.7 )
-		{
-			Point X = centers[i];
-			attention_region.push_back(X);
-		}
-	}
-
-
-	for (int i = 0; i < sal_Map.size(); i++)
-	{
-		float sal = sal_Map[i];
-		float d_focus = d_foci(centers[i], attention_region);
-
-		if (( d_focus<= 0.2) && (sal > mean + std_deviation))
-		{
-			
-			float val = sal * (1.0 / (1 - d_focus));
-			sal_Map[i] = MIN(1.0, val);
-		}
-
-		if (d_focus<=0.5)
-		{
-			
-			sal_Map[i] = sal* (1 - d_focus);
-		}
-		else {
-			
-			sal_Map[i] = sal*(1 - d_focus)*(1 - d_focus);
-		}
-	}
-
-	normalized(&sal_Map);
-	//draw_Map(sal_Map, img, sp, "Final saliency Map");
-
-
-	for (int i = 0; i < sal_Map.size(); i++)
-	{
-		float sum = 0.0;
-		float z_sum = 0.0;
-		for (int k = 0; k < sal_Map.size(); k++)
-		{
+			float sum = 0.0;
+			float z_sum = 0.0;
+			for (int k = 0; k < sal_Map.size(); k++)
+			{
 				float kalkulation = expf(-abs(sal_Map[i] - sal_Map[k]) / 0.50);
 				float cal = sal_Map[k] * kalkulation;
 
 				z_sum += kalkulation;
 				sum += cal;
+			}
+			sal_Map[i] = sum / z_sum;
 		}
-		sal_Map[i] = sum / z_sum;
+
+		normalized(&sal_Map);
+		draw_Map(sal_Map, img, sp, "Final saliency Map With Smoothing ");
+		image_num++;
+		//waitKey(0);
 	}
-
-	normalized(&sal_Map);
-	draw_Map(sal_Map, img, sp, "Final saliency Map With Smoothing ");
 	
-
-	waitKey(0);
 	return 0;
 }
