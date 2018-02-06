@@ -89,7 +89,7 @@ float d_foci(Point X , vector<Point>attention_region)
 	return d_foci ;
 }
 
-void Color_importance_map(Mat img)
+vector<float> Color_importance_map(Mat img,Superpixels sp)
 {
 	vector<float>Color_sal;
 	Mat colorImage(img);
@@ -174,22 +174,22 @@ void Color_importance_map(Mat img)
 	float A_avg = (mean_labimage[1] + mode_a) / 2.0;
 	float B_avg = (mean_labimage[2] + mode_b) / 2.0;
 
-	cout << "L channel  = " << "Mean = " << mean_labimage[0] << "  Mode = " << mode_light << "   AVG = " << L_avg << endl;
-	cout << "A channel  = " << "Mean = " << mean_labimage[1] << "  Mode = " << mode_a << "  AVG = " << A_avg << endl;
-	cout << "B channel  = " << "Mean = " << mean_labimage[2] << "  Mode = " << mode_b << "  AVG = " << B_avg << endl;
+	//cout << "L channel  = " << "Mean = " << mean_labimage[0] << "  Mode = " << mode_light << "   AVG = " << L_avg << endl;
+	//cout << "A channel  = " << "Mean = " << mean_labimage[1] << "  Mode = " << mode_a << "  AVG = " << A_avg << endl;
+	//cout << "B channel  = " << "Mean = " << mean_labimage[2] << "  Mode = " << mode_b << "  AVG = " << B_avg << endl;
 
 
 	Mat tar(src.rows, src.cols, CV_8UC3, Scalar(L_avg, A_avg, B_avg));
 	absdiff(src, tar, src);
 
-	imshow(" abs difference", src);
+	//imshow(" abs difference", src);
 
 	vector<Mat> spl_diff;
 	split(src, spl_diff);
 
-	imshow("Diff L channel", spl_diff[0]);  //L
-	imshow("Diff A channel ", spl_diff[1]);  //A
-	imshow("Diff B channel ", spl_diff[2]);  //B
+//	imshow("Diff L channel", spl_diff[0]);  //L
+	//imshow("Diff A channel ", spl_diff[1]);  //A
+	//imshow("Diff B channel ", spl_diff[2]);  //B
 
 											 /*
 											 Combine the diff. Lab Image
@@ -247,18 +247,36 @@ void Color_importance_map(Mat img)
 
 	normalize(Imp_prime, Imp_prime, 0, 255, NORM_MINMAX, CV_8UC1);
 	medianBlur(Imp_prime, Imp_prime, 7);
-	imshow("mediun PRIME ", Imp_prime);
-
-
+	//imshow("mediun PRIME ", Imp_prime);
 
 	//return Color_sal;
+	// Now calculate Color Saliency For Color Model of an image
+	
+	vector <float>color_saliency;
+	Mat labels = sp.getLabels();
+	vector<Point> centers = sp.getCenters();
+	vector<float>num_pixels(centers.size(), 0);
+	vector<int>pixels_counter(centers.size(), 0);
+
+	for (int y = 0; y < (int)Imp_prime.rows; ++y) {
+		for (int x = 0; x < (int)Imp_prime.cols; ++x) {
+			int lbl = labels.at<int>(y, x);
+			num_pixels[lbl]+=Imp_prime.at<uchar>(y, x);
+			pixels_counter[lbl]++;
+		}
+	}
+	for (int i = 0; i < centers.size(); i++)
+	{
+		num_pixels[i] = num_pixels[i] / (255*pixels_counter[i]);
+	}
+	normalized(&num_pixels);
+	draw_Map(num_pixels, img, sp, "COLOR SALIENCY");
+	return num_pixels;
 }
 
 
 int main()
 {
-	
-	
 	Mat img = imread("24071.jpg") ;
 	if (!img.data) {
 		cout << "Bad image ..." << endl;
@@ -271,12 +289,9 @@ int main()
 
 	//imshow("Original image", img);
 	Superpixels sp(img);
+
 	Mat labels = sp.getLabels();
-
 	Mat boundaries = sp.viewSuperpixels();
-	
-
-
 	Mat recolored = sp.colorSuperpixels();
 
 	//imshow("Average superpixel colors", recolored);
@@ -295,6 +310,7 @@ int main()
 	}
 	
 	// Global Contrast Map
+
 
 
 	vector<float>global_sal;
@@ -318,7 +334,6 @@ int main()
 
 				intensity1[0] = avg_colors[i][0] / 255.0; intensity1[1] = avg_colors[i][1] / 255.0; intensity1[2] = avg_colors[i][2] / 255.0; 
 				intensity2[0] = avg_colors[j][0] / 255.0; intensity2[1] = avg_colors[j][1] / 255.0; intensity2[2] = avg_colors[j][2] / 255.0;
-
 				float color_dis = sqrtf( ((intensity2[2] - intensity1[2])*(intensity2[2] - intensity1[2])) + ((intensity2[1] - intensity1[1])*(intensity2[1] - intensity1[1])) + ((intensity2[0] - intensity1[0])*(intensity2[0] - intensity1[0])) );
 
 				//cout << "color Distance = " << color_dis << endl;
@@ -428,6 +443,20 @@ int main()
 	normalized(&boundary_sal);
 	draw_Map(boundary_sal, img, sp,"Boundary saliency Map");
 
+
+	// Color image and lab image 
+	/*
+	Various Experiment on color mOdel
+	We will Experiment on Specially CIE LAB color Model Which give importance to Light and Color Complement
+	Lets see what we can achieve .All the good wishes for Us
+	*/
+	//Color_saliency;
+	vector<float>color_Saliency(Color_importance_map(img, sp));
+
+	// combining ColorImportance image and Salient Map Image
+	// Taking   average saliency  method From ColorImportance Image
+
+
 	//Now Combining both the Global Saliency Map and the Boundary Saliency Map 
 	// Saliency Map  S  = S_boundary * (1 + S_global)
 
@@ -435,16 +464,12 @@ int main()
 
 	for (int i = 0; i < boundary_sal.size(); i++) 
 	{
-		float sal = boundary_sal[i] * (1 + global_sal[i]);
+		float sal = boundary_sal[i] * (1 +global_sal[i]*color_Saliency[i]);
 		sal_Map.push_back(sal);
 	}
 	normalized(&sal_Map);
 
-
-
 	// Now smoothing TEchnique 
-
-
 
 	float std_deviation,sqrd_distance=0.0;
 	float sum = 0.0, mean;
@@ -517,19 +542,8 @@ int main()
 
 	normalized(&sal_Map);
 	draw_Map(sal_Map, img, sp, "Final saliency Map With Smoothing ");
-
 	
 
-	// Color image and lab image 
-	/*
-	
-	Various Experiment on color mOdel
-	We will Experiment on Specially CIE LAB color Model Which give importance to Light and Color Complement 
-	Lets see what we can achieve .All the good wishes for Us
-	*/
-	Color_importance_map(img);
-
-	
 	waitKey(0);
 	return 0;
 }

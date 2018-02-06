@@ -1,1 +1,51 @@
-﻿
+﻿  Superpixels.cpp
+d:\thesis\opencvtest\opencvtest\superpixels.cpp(64): warning C4244: 'argument': conversion from 'long' to 'uchar', possible loss of data
+d:\thesis\opencvtest\opencvtest\superpixels.cpp(135): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+d:\thesis\opencvtest\opencvtest\superpixels.cpp(136): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+d:\thesis\opencvtest\opencvtest\superpixels.cpp(137): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+d:\thesis\opencvtest\opencvtest\superpixels.cpp(138): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+d:\thesis\opencvtest\opencvtest\superpixels.cpp(187): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\superpixels.cpp(188): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+  Source.cpp
+d:\thesis\opencvtest\opencvtest\source.cpp(42): warning C4244: 'initializing': conversion from 'double' to 'uchar', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(76): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(77): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(78): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(79): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(141): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(142): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(143): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(147): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(148): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(149): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(173): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(174): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(175): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(201): warning C4305: 'initializing': truncation from 'double' to 'float'
+d:\thesis\opencvtest\opencvtest\source.cpp(209): warning C4244: '*=': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(210): warning C4244: '*=': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(211): warning C4244: '*=': conversion from 'float' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(228): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(242): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(326): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(327): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(328): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(329): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(335): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(336): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(341): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(385): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(413): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(414): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(415): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(416): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(420): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(421): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(424): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(439): warning C4244: '/=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(509): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(510): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\thesis\opencvtest\opencvtest\source.cpp(534): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  opencvtest.vcxproj -> D:\Thesis\opencvtest\x64\Debug\opencvtest.exe
+  opencvtest.vcxproj -> D:\Thesis\opencvtest\x64\Debug\opencvtest.pdb (Full PDB)
