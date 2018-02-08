@@ -6,8 +6,8 @@ Superpixels::Superpixels(Mat& img, float m, float S) {
 	this->img = img.clone();
 	this->m = m;
 	if (S == USE_DEFAULT_S) {
-		this->nx = 18; // cols
-		this->ny = 18; // rows
+		this->nx = 15; // cols
+		this->ny = 15; // rows
 		this->dx = img.cols / float(nx); //steps
 		this->dy = img.rows / float(ny);
 		this->S = (dx + dy + 1) / 2; // default window size

@@ -18,7 +18,7 @@
     <ClCompile Include="..\..\..\Thesis\opencvtest\opencvtest\Superpixels.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Thesis\opencvtest\opencvtest\Source.cpp">
+    <ClCompile Include="precision_recall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

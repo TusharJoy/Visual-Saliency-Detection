@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Thesis\opencvtest\opencvtest\Source.cpp" />
     <ClCompile Include="..\..\..\Thesis\opencvtest\opencvtest\Superpixels.cpp" />
+    <ClCompile Include="precision_recall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Thesis\opencvtest\opencvtest\Superpixels.h" />
